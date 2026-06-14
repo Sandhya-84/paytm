@@ -38,8 +38,10 @@ router.post("/signin",async (req,res)=>{
     },JWT_SECRET,{
         expiresIn:"7d"
     });
+    console.log("User firstName:", user.firstName);
     res.status(200).json({
-        token
+        token,
+        firstName: user.firstName
     });
 });
 
@@ -53,11 +55,13 @@ const signupSchema=zod.object({
 router.post("/signup",async (req,res)=>{
     const body=req.body;
     const result=signupSchema.safeParse(req.body);
-    if(!result.success){
-        return res.status(400).json({
-            message:"Invalid inputs"
-        });
-    }
+   if (!result.success) {
+    console.log(result.error);
+
+    return res.status(400).json({
+        error: result.error
+    });
+}
     const existingUser=await User.findOne({
         username:body.username,
     })
@@ -102,7 +106,7 @@ router.put("/", authMiddleware, async (req, res) => {
     }
 
     await User.updateOne(
-        { _id: req.userID },
+        { _id: req.userId },
         req.body
     );
 
@@ -112,9 +116,11 @@ router.put("/", authMiddleware, async (req, res) => {
 });
 
 
-router.get("/bulk",async(req,res)=>{
+router.get("/bulk", authMiddleware,async(req,res)=>{
+   console.log("req.userId =", req.userId);
     const filter=req.query.filter || "";
     const users=await User.find({
+         _id: { $ne: req.userId },
         $or: [{
             firstName:{
                 "$regex":filter,
