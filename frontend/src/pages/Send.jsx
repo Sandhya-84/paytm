@@ -73,6 +73,10 @@ export const Send = () => {
                         </div>
 
                         <button onClick={async () => {
+                            if (!amount || amount <= 0) {
+    alert("Please enter a valid amount");
+    return;
+}
     try {
         const res = await axios.post(`${BACKEND_URL}/api/v1/account/transfer`,
             {
