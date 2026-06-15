@@ -6,7 +6,7 @@ import {SubHeading} from "../components/SubHeading";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const Signin=()=>{
 
     const [email,setEmail]=useState("");
@@ -32,8 +32,7 @@ export const Signin=()=>{
                     <Button label={"Sign in"}
                     onClick={async()=>{
                         try{
-                            const response=await axios.post(
-                                "http://localhost:3000/api/v1/user/signin",
+                            const response=await axios.post(`${BACKEND_URL}/api/v1/user/signin`,
                                 {
                                     username: email,
                                     password

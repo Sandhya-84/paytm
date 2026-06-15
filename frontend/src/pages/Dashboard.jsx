@@ -3,13 +3,12 @@ import {Balance} from "../components/Balance";
 import {Users} from "../components/Users";
 import {useState,useEffect} from "react";
 import axios from "axios";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const Dashboard=()=>{
     const [balance , setBalance]=useState(0);
     const [firstName,setFirstName]=useState("");
     useEffect (()=>{
-        axios.get(
-            "http://localhost:3000/api/v1/account/balance",
+        axios.get(`${BACKEND_URL}/api/v1/account/balance`,
             {
                 headers:{
                     Authorization :

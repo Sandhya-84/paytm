@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const Send = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -74,8 +74,7 @@ export const Send = () => {
 
                         <button onClick={async () => {
     try {
-        const res = await axios.post(
-             "http://localhost:3000/api/v1/account/transfer",
+        const res = await axios.post(`${BACKEND_URL}/api/v1/user/transfer`,
             {
                 to: id,
                 amount: Number(amount)
