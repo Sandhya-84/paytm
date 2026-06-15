@@ -8,6 +8,7 @@ export const Send = () => {
     const [searchParams] = useSearchParams();
     const id=searchParams.get("id");
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState("");
     const [amount,setAmount]=useState("");
     console.log(searchParams.get("id"));
     if (success) {
@@ -63,7 +64,7 @@ export const Send = () => {
 
                             <input
                             onChange={(e)=>{
-                                setAmount(Number(e.target.value));
+                                setAmount(e.target.value);
                             }}
                                 id="amount"
                                 type="number"
@@ -71,12 +72,17 @@ export const Send = () => {
                                 className="flex h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
                             />
                         </div>
+                        {error && (
+                    <div className="text-red-500 text-sm font-medium">
+                         {error}
+                     </div>
+                    )}
 
                         <button onClick={async () => {
                             if (!amount || amount <= 0) {
-    alert("Please enter a valid amount");
-    return;
-}
+                               setError("Please enter a valid amount");
+                                return;
+                            }
     try {
         const res = await axios.post(`${BACKEND_URL}/api/v1/account/transfer`,
             {
@@ -99,10 +105,11 @@ export const Send = () => {
 }, 2000);
 
     } catch (err) {
-        console.log(err.response?.data);
+        setError(
+        err.response?.data?.message || "Transfer failed"
+    );
     }
-}}
-                            className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600"
+}}   className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600"
                         >
                             Initiate Transfer
                         </button>
