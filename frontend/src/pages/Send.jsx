@@ -74,7 +74,7 @@ export const Send = () => {
 
                         <button onClick={async () => {
     try {
-        const res = await axios.post(`${BACKEND_URL}/api/v1/user/transfer`,
+        const res = await axios.post(`${BACKEND_URL}/api/v1/account/transfer`,
             {
                 to: id,
                 amount: Number(amount)
