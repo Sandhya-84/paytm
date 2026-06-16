@@ -3,6 +3,7 @@ const router=express.Router();
 const { authMiddleware } = require("../middleware");
 const {User,Account}=require("../db");
 const jwt=require("jsonwebtoken");
+const bcrypt=require("bcrypt");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -25,14 +26,24 @@ router.post("/signin",async (req,res)=>{
     const body=req.body;
     const user=await User.findOne({
         username:body.username,
-        password:body.password
     });
+
 
     if(!user){
         return res.status(401).json({
             message:"Error while logging in"
         })
     }
+    const passwordMatch = await bcrypt.compare(
+    body.password,
+    user.password
+);
+    if (!passwordMatch) {
+    return res.status(401).json({
+        message: "Error while logging in"
+    });
+}
+
     const token=jwt.sign({
         userId: user._id
     },JWT_SECRET,{
@@ -53,6 +64,7 @@ const signupSchema=zod.object({
     lastName:zod.string().max(30)
 })
 router.post("/signup",async (req,res)=>{
+      console.log("SIGNUP ROUTE HIT");
     const body=req.body;
     const result=signupSchema.safeParse(req.body);
    if (!result.success) {
@@ -71,7 +83,15 @@ router.post("/signup",async (req,res)=>{
             message:"Username already taken/ Incorrect inputs"
         });
     }
-  const dbUser= await User.create(body);
+  const hashedPassword = await bcrypt.hash(body.password, 10);
+
+  const dbUser = await User.create({
+    username: body.username,
+    password: hashedPassword,
+    firstName: body.firstName,
+    lastName: body.lastName
+});
+console.log("Saved password:", dbUser.password);
 
   await Account.create({
     userId: dbUser._id,
@@ -104,6 +124,11 @@ router.put("/", authMiddleware, async (req, res) => {
             message: "Error while updating information"
         });
     }
+
+
+    if (req.body.password) {
+    req.body.password = await bcrypt.hash(req.body.password, 10);
+}
 
     await User.updateOne(
         { _id: req.userId },
@@ -144,4 +169,6 @@ router.get("/bulk", authMiddleware,async(req,res)=>{
         }))
         })
 })
+
+
 module.exports=router;
