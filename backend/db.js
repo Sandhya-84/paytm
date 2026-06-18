@@ -70,10 +70,10 @@ const transactionSchema=new mongoose.Schema({
     }
 });
 
-const Transactions=mongoose.model("Transactions",transactionSchema);
+const Transaction=mongoose.model("Transaction",transactionSchema);
 
 module.exports={
     User,
     Account,
-    Transactions
+    Transaction
 };

@@ -2,7 +2,7 @@ const express=require("express");
 const mongoose=require("mongoose");
 const router=express.Router();
 const { authMiddleware } = require("../middleware");
-const {User,Account,Transactions}=require("../db");
+const {User,Account,Transaction}=require("../db");
 
 
 router.post("/transfer", authMiddleware, async (req, res) => {
@@ -53,6 +53,12 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             { $inc: { balance: amount } },
             { session }
         );
+        
+          await Transaction.create({
+        senderId: req.userId,
+        receiverId: to,
+        amount
+});
 
         await session.commitTransaction();
         session.endSession();
@@ -61,12 +67,7 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             message: "Transfer successful"
         });
 
-        await Transactions.create({
-        senderId: req.userId,
-        receiverId: to,
-        amount
-});
-
+      
     } catch (err) {
         await session.abortTransaction();
         session.endSession();
@@ -90,15 +91,19 @@ router.get("/balance",authMiddleware,async(req,res)=>{
 });
 
 router.get("/transactions", authMiddleware, async(req,res)=>{
-    const transactions = await Transactions.find({
+    const transactions = await Transaction.find({
         $or:[
             {senderId : req.userId},
             {receiverId: req.userId}
         ]
     })
-
+     
+    .populate("senderId","firstName lastName")
+    .populate("receiverId", "firstName lastName")
     .sort({createdAt:-1})
     .limit(10);
+
+    console.log(JSON.stringify(transactions, null, 2));
 
     res.json({
         transactions

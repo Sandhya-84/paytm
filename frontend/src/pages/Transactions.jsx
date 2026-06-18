@@ -15,6 +15,7 @@ export const Transactions = () => {
                 }
             }
         ).then(res => {
+            console.log(res.data.transactions);
             setTransactions(res.data.transactions);
         });
     }, []);
