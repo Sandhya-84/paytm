@@ -61,7 +61,7 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             message: "Transfer successful"
         });
 
-        await Transaction.create({
+        await Transactions.create({
         senderId: req.userId,
         receiverId: to,
         amount
@@ -90,7 +90,7 @@ router.get("/balance",authMiddleware,async(req,res)=>{
 });
 
 router.get("/transactions", authMiddleware, async(req,res)=>{
-    const transaction = await Transactions.find({
+    const transactions = await Transactions.find({
         $or:[
             {senderId : req.userId},
             {receiverId: req.userId}
