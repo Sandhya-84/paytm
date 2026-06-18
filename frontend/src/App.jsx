@@ -5,6 +5,7 @@ import {Signup} from "./pages/Signup";
 import {Signin} from "./pages/Signin";
 import {Dashboard} from "./pages/Dashboard";
 import {Send} from "./pages/Send";
+import {Transactions} from "./pages/Transactions"
 import {Navigate} from "react-router-dom";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/send" element={<Send/>}/>
+        <Route path="/transactions" element={<Transactions />} />
       </Routes>
     </Router>
    </>

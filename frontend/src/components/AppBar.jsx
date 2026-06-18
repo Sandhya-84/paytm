@@ -1,9 +1,10 @@
 import {useNavigate} from "react-router-dom"
 import {useState} from "react"
-
+import {IoNotificationsOutline} from "react-icons/io5";
 
 export const AppBar=({firstName})=>{
     const [open , setOpen]=useState(false);
+    const [showNotifications,setNotifications]=useState(false);
     const navigate=useNavigate();
     const handleLogout=()=>{
         localStorage.removeItem("token");
@@ -17,12 +18,12 @@ export const AppBar=({firstName})=>{
             <div className="flex flex-col justify-center h-full mr-4 font-bold">Hello {firstName}</div>
 
             <div onClick={()=>
-                setOpen(!open)} className="rounded-full  h-10 w-12 bg-slate-200 flex justify-center ">
+                setOpen(!open)} className="relative rounded-full  h-10 w-12 bg-slate-200 flex justify-center ">
                 <div className="flex flex-col justify-center h-full text-l">{firstName?.charAt(0).toUpperCase()||"U"}</div>
 
                 {open && (
-                    <div className="aboslute top-12 right-0 w-40 bg-white border rounded-lg shadow lg">
-                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100"> Logout</button>
+                    <div className="absolute top-12 right-0 w-40 bg-white border rounded-lg shadow-lg">
+                        <button onClick={handleLogout} className=" text-red-500 font-bold w-full text-left px-4 py-2 hover:bg-gray-100"> Logout</button>
                     </div>
                 )}
             </div>
