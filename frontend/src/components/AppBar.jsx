@@ -1,12 +1,30 @@
+import {useNavigate} from "react-router-dom"
+import {useState} from "react"
+
+
 export const AppBar=({firstName})=>{
+    const [open , setOpen]=useState(false);
+    const navigate=useNavigate();
+    const handleLogout=()=>{
+        localStorage.removeItem("token");
+        navigate("/signin");
+    };
+
     return <div className="shadow h-14 flex justify-between">
         <div className="flex flex-col justify-center h-full ml-6 font-bold pl-4 ">PayTM App</div>
 
         <div className="flex pt-2 mr-6">
             <div className="flex flex-col justify-center h-full mr-4 font-bold">Hello {firstName}</div>
 
-            <div className="rounded-full  h-10 w-12 bg-slate-200 flex justify-center ">
+            <div onClick={()=>
+                setOpen(!open)} className="rounded-full  h-10 w-12 bg-slate-200 flex justify-center ">
                 <div className="flex flex-col justify-center h-full text-l">{firstName?.charAt(0).toUpperCase()||"U"}</div>
+
+                {open && (
+                    <div className="aboslute top-12 right-0 w-40 bg-white border rounded-lg shadow lg">
+                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100"> Logout</button>
+                    </div>
+                )}
             </div>
 
         </div>
