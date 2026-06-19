@@ -16,6 +16,8 @@ export const Transactions = () => {
             }
         ).then(res => {
             console.log(res.data.transactions);
+console.log(res.data.transactions[0].sender);
+console.log(res.data.transactions[0].receiver);
             setTransactions(res.data.transactions);
         });
     }, []);
@@ -32,9 +34,9 @@ export const Transactions = () => {
                     className="border p-4 rounded mb-3 shadow-sm"
                 >
                     <div className="font-semibold">
-                        {txn.senderId.firstName} {txn.senderId.lastName}
+                        {txn.sender?.firstName} {txn.sender?.lastName}
                         {" → "}
-                        {txn.receiverId.firstName} {txn.receiverId.lastName}
+                        {txn.receiver?.firstName} {txn.receiver?.lastName}
                     </div>
 
                     <div className="mt-1">

@@ -1,10 +1,12 @@
-const express=require("express");
-const mongoose=require("mongoose");
-const router=express.Router();
+const express = require("express");
+const mongoose = require("mongoose");
+const router = express.Router();
+
 const { authMiddleware } = require("../middleware");
-const {User,Account,Transaction}=require("../db");
+const { User, Account, Transaction } = require("../db");
+const {ObjectId}=require("mongoose").Types;
 
-
+// ---------------------- TRANSFER ----------------------
 router.post("/transfer", authMiddleware, async (req, res) => {
     const session = await mongoose.startSession();
 
@@ -12,53 +14,57 @@ router.post("/transfer", authMiddleware, async (req, res) => {
         session.startTransaction();
 
         const { amount, to } = req.body;
+
+        // validate amount
         if (!amount || amount <= 0) {
-    await session.abortTransaction();
+            await session.abortTransaction();
+            return res.status(400).json({
+                message: "Please enter a valid amount"
+            });
+        }
 
-    return res.status(400).json({
-        message: "Please enter a valid amount"
-    });
-}
-
+        // get sender account
         const senderAccount = await Account.findOne({
             userId: req.userId
         }).session(session);
 
         if (!senderAccount || senderAccount.balance < amount) {
             await session.abortTransaction();
-
             return res.status(400).json({
                 message: "Insufficient balance"
             });
         }
 
+        // get receiver user
         const receiver = await User.findById(to).session(session);
 
         if (!receiver) {
             await session.abortTransaction();
-
             return res.status(400).json({
                 message: "Receiver not found"
             });
         }
 
+        // deduct sender balance
         await Account.updateOne(
             { userId: req.userId },
             { $inc: { balance: -amount } },
             { session }
         );
 
+        // add receiver balance
         await Account.updateOne(
             { userId: receiver._id },
             { $inc: { balance: amount } },
             { session }
         );
-        
-          await Transaction.create({
-        senderId: req.userId,
-        receiverId: to,
-        amount
-});
+
+        // create transaction INSIDE session (IMPORTANT FIX)
+        await Transaction.create([{
+            senderId: new ObjectId(req.usetId),
+            receiverId: new ObjectId(to),
+            amount
+        }], { session });
 
         await session.commitTransaction();
         session.endSession();
@@ -67,13 +73,11 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             message: "Transfer successful"
         });
 
-      
     } catch (err) {
         await session.abortTransaction();
         session.endSession();
 
         console.log(err);
-
         res.status(500).json({
             message: "Transfer failed"
         });
@@ -81,33 +85,51 @@ router.post("/transfer", authMiddleware, async (req, res) => {
 });
 
 
-router.get("/balance",authMiddleware,async(req,res)=>{
-    const account=await Account.findOne({
+// ---------------------- BALANCE ----------------------
+router.get("/balance", authMiddleware, async (req, res) => {
+    const account = await Account.findOne({
         userId: req.userId
     });
+
     res.json({
         balance: account.balance
     });
 });
 
-router.get("/transactions", authMiddleware, async(req,res)=>{
-    const transactions = await Transaction.find({
-        $or:[
-            {senderId : req.userId},
-            {receiverId: req.userId}
-        ]
-    })
-     
-    .populate("senderId","firstName lastName")
-    .populate("receiverId", "firstName lastName")
-    .sort({createdAt:-1})
-    .limit(10);
 
-    console.log(JSON.stringify(transactions, null, 2));
+// ---------------------- TRANSACTIONS ----------------------
+// ---------------------- TRANSACTIONS ----------------------
+router.get("/transactions", authMiddleware, async (req, res) => {
+    try {
+        const transactions = await Transaction.find({
+            $or: [
+                { senderId: req.userId },
+                { receiverId: req.userId }
+            ]
+        })
+        .populate("senderId", "firstName lastName")   // Automatically fetches sender names
+        .populate("receiverId", "firstName lastName") // Automatically fetches receiver names
+        .sort({ createdAt: -1 })
+        .limit(10);
 
-    res.json({
-        transactions
-    });
+        // Map the populated data so it matches the format your frontend expects
+        const transactionsWithNames = transactions.map(txn => ({
+            _id: txn._id,
+            amount: txn.amount,
+            createdAt: txn.createdAt,
+            sender: txn.senderId,   // senderId is now the populated user object
+            receiver: txn.receiverId // receiverId is now the populated user object
+        }));
+
+        res.json({
+            transactions: transactionsWithNames
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Error fetching transactions"
+        });
+    }
 });
 
-module.exports=router;
+module.exports = router;
