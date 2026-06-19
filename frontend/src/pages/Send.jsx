@@ -102,7 +102,7 @@ export const Send = () => {
 
         setTimeout(() => {
     navigate("/dashboard");
-}, 10000);
+}, 5000);
 
     } catch (err) {
         setError(

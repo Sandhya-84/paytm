@@ -59,10 +59,15 @@ const transactionSchema=new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
+     senderFirstName: String,
+    senderLastName: String,
     receiverId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
+     receiverFirstName: String,
+    receiverLastName: String,
+
     amount: Number,
     createdAt:{
         type: Date,

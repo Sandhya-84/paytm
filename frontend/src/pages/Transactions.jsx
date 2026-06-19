@@ -16,8 +16,8 @@ export const Transactions = () => {
             }
         ).then(res => {
             console.log(res.data.transactions);
-console.log(res.data.transactions[0].sender);
-console.log(res.data.transactions[0].receiver);
+console.log(res.data.transactions);
+
             setTransactions(res.data.transactions);
         });
     }, []);
@@ -33,12 +33,11 @@ console.log(res.data.transactions[0].receiver);
                     key={txn._id}
                     className="border p-4 rounded mb-3 shadow-sm"
                 >
-                    <div className="font-semibold">
-                        {txn.sender?.firstName} {txn.sender?.lastName}
-                        {" → "}
-                        {txn.receiver?.firstName} {txn.receiver?.lastName}
-                    </div>
-
+                   <div className="font-semibold">
+    {txn.senderFirstName} {txn.senderLastName}
+    {" → "}
+    {txn.receiverFirstName} {txn.receiverLastName}
+</div>
                     <div className="mt-1">
                         ₹{txn.amount}
                     </div>

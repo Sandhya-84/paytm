@@ -45,6 +45,16 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             });
         }
 
+        // get sender user
+        const senderUser = await User.findById(req.userId).session(session);
+
+        if (!senderUser) {
+            await session.abortTransaction();
+            return res.status(400).json({
+                message: "Sender not found"
+            });
+        }
+
         // deduct sender balance
         await Account.updateOne(
             { userId: req.userId },
@@ -59,10 +69,19 @@ router.post("/transfer", authMiddleware, async (req, res) => {
             { session }
         );
 
-        // create transaction INSIDE session (IMPORTANT FIX)
+        // create transaction
+
+        console.log("req.userId =", req.userId);
+console.log("senderUser =", senderUser); 
         await Transaction.create([{
-            senderId: new ObjectId(req.usetId),
-            receiverId: new ObjectId(to),
+            senderId: req.userId,
+            senderFirstName: senderUser.firstName,
+            senderLastName: senderUser.lastName,
+
+            receiverId: receiver._id,
+            receiverFirstName: receiver.firstName,
+            receiverLastName: receiver.lastName,
+
             amount
         }], { session });
 
@@ -78,6 +97,7 @@ router.post("/transfer", authMiddleware, async (req, res) => {
         session.endSession();
 
         console.log(err);
+
         res.status(500).json({
             message: "Transfer failed"
         });
@@ -103,8 +123,8 @@ router.get("/transactions", authMiddleware, async (req, res) => {
     try {
         const transactions = await Transaction.find({
             $or: [
-                { senderId: req.userId },
-                { receiverId: req.userId }
+                { senderId: new ObjectId(req.userId) },
+                { receiverId:new ObjectId( req.userId) }
             ]
         })
         .populate("senderId", "firstName lastName")   // Automatically fetches sender names
