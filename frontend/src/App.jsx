@@ -7,6 +7,7 @@ import {Dashboard} from "./pages/Dashboard";
 import {Send} from "./pages/Send";
 import {Transactions} from "./pages/Transactions"
 import {Navigate} from "react-router-dom";
+import {Profile} from "./pages/Profile"
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard/>}/>
         <Route path="/send" element={<Send/>}/>
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
    </>

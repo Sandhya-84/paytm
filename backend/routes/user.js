@@ -170,5 +170,17 @@ router.get("/bulk", authMiddleware,async(req,res)=>{
         })
 })
 
+router.get("/me",authMiddleware,async(req,res)=>{
+    try{
+        const user=await User.findById(req.userId).select("-password");
+        res.json({
+            user
+        });
+    }catch(err){
+        res.status(500).json({
+            message:"Error fetching user"
+        });
+    }
+});
 
 module.exports=router;
