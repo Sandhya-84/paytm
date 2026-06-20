@@ -1,10 +1,27 @@
 import {useNavigate} from "react-router-dom"
-import {useState} from "react"
+import {useState,useEffect} from "react"
 import {FiUser,FiLogOut} from "react-icons/fi"
+import axios from "axios";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const AppBar=({firstName})=>{
     const [open , setOpen]=useState(false);
     const navigate=useNavigate();
+    const [user,setUser]=useState(null);
+
+    useEffect(()=>{
+        axios.get(
+        `${BACKEND_URL}/api/v1/user/me`,
+        {
+            headers: {
+                Authorization:
+                    "Bearer " + localStorage.getItem("token")
+            }
+        }
+    ).then((res) => {
+        setUser(res.data.user);
+    });
+}, []);
 
     const handleLogout=()=>{
         localStorage.removeItem("token");
@@ -21,7 +38,18 @@ export const AppBar=({firstName})=>{
             <div onClick={()=>
                 setOpen(!open)} className="relative rounded-full  h-10 w-12 bg-slate-200 flex justify-center ">
 
-                <div className="flex flex-col justify-center h-full text-l">{firstName?.charAt(0).toUpperCase()||"U"}</div>
+                {user?.profilePic?(
+                    <img 
+                    src={user.profilePic}
+                    alt="profile"
+                    className="h-10 w-10 rounded-full object-cover"
+                    />
+                ):(
+                    <div className="flex flex-col justify-center h-full text-l font-bold">
+                        {firstName?.charAt(0).toUpperCase() || "U"}
+                    </div>
+
+                )}
 
                 {open && (
                     <div className="absolute top-12 right-0 w-48 bg-white border rounded-lg shadow-lg overflow-hidden z-50">
