@@ -35,7 +35,27 @@ const userSchema=new mongoose.Schema({
         required:true,
         maxLength:30,
         trim:true
-    }
+    },
+
+    profilePic:{
+        type:String,
+        default:""
+    },
+
+    bio:{
+        type:String,
+        default:"",
+        maxLength:200
+    },
+
+    phone:{
+        type:String,
+        defualt:""
+    },
+}
+,{
+    timestamps:true
+
 });
 
 const User=mongoose.model("User",userSchema);

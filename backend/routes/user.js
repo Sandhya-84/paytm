@@ -62,6 +62,7 @@ const signupSchema=zod.object({
     password:zod.string().min(8),
     firstName:zod.string().max(30),
     lastName:zod.string().max(30)
+
 })
 router.post("/signup",async (req,res)=>{
       console.log("SIGNUP ROUTE HIT");
@@ -112,7 +113,11 @@ console.log("Saved password:", dbUser.password);
 const updateBody=zod.object({
     password:zod.string().optional(),
     firstName:zod.string().optional(),
-    lastName:zod.string().optional()
+    lastName:zod.string().optional(),
+    bio: zod.string().optional(),
+    phone: zod.string().optional(),
+    profilePic: zod.string().optional()
+
 })
 
 router.put("/", authMiddleware, async (req, res) => {
