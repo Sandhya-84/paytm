@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {useNavigate} from "react-router-dom"
+import { FiArrowLeft } from "react-icons/fi";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const Profile=()=>{
     const [user,setUser]=useState(null);
     const [editing , setEditing]=useState(false);
+    const navigate=useNavigate();
     useEffect(()=>{
         axios.get(
             `${BACKEND_URL}/api/v1/user/me`,
@@ -49,9 +52,16 @@ export const Profile=()=>{
     return (
         <div className="max-w-3xl mx-auto mt-10 p-6">
            <div className ="bg-white shadow rounded-xl p-6">
-            <h1 className ="text-2xl font-bold mb-6">
+            <div className="flex justify-between items-center mb-6">
+            <h1 className ="text-2xl font-bold ">
                 My Profile
             </h1>
+            <button onClick={()=> navigate("/dashboard")}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover: bg-blue-600">
+                <FiArrowLeft />
+                DashBoard
+            </button>
+            </div>
 
             <div className="flex flex-col items-center">
                 <div className="w-24 h-24 rounded-full bg-blue-200  text-white flex items-center justify-center text-3xl font-bold">
