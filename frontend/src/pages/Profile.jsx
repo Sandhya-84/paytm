@@ -36,7 +36,7 @@ export const Profile=()=>{
                     }
                 }
             );
-            setEditing(flase);
+            setEditing(false);
             alert("Profile updated successfully ");
         }catch(err){
             alert("Failed to update profile");
@@ -69,14 +69,14 @@ export const Profile=()=>{
                             })
                         }
                         className="border p-2 rounded"
-                        placeHolder= "First Name"
+                        placeholder= "First Name"
                         />
                         <input
                         value={user.lastName}
                         onChange={(e)=>
                             setUser({
                                 ...user,
-                                lastName: e.targer.value
+                                lastName: e.target.value
                             })
                         }
                         className="border p-2 rounded"
