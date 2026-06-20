@@ -3,6 +3,7 @@ import axios from "axios";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const Profile=()=>{
     const [user,setUser]=useState(null);
+    const [editing , setEditing]=useState(false);
     useEffect(()=>{
         axios.get(
             `${BACKEND_URL}/api/v1/user/me`,
@@ -16,6 +17,31 @@ export const Profile=()=>{
             setUser(res.data.user);
         });
     },[]);
+
+
+    const saveProfile = async()=>{
+        try{
+            await axios.put(
+                `${BACKEND_URL}/api/v1/user`,
+                {
+                    firstName: user.firstName,
+                    lastName:user.lastName,
+                    phone : user.phone,
+                    bio: user.bio
+                },
+                {
+                    headers:{
+                        Authorization:
+                        "Bearer "+localStorage.getItem("token")
+                    }
+                }
+            );
+            setEditing(flase);
+            alert("Profile updated successfully ");
+        }catch(err){
+            alert("Failed to update profile");
+        }
+    }
 
     if(!user){
        return <div className="p-6">Loading...</div>
@@ -32,9 +58,36 @@ export const Profile=()=>{
                     {user?.firstName?.charAt(0).toUpperCase()}
                 </div>
 
-                <h2 className="mt-4 text-xl font-semibold">
-                    {user?.firstName} {user.lastName}
-                </h2>
+                {editing?(
+                    <div className="flex gap-2 mt-4">
+                        <input 
+                        value ={user.firstName}
+                        onChange={(e)=>
+                            setUser({
+                                ...user,
+                                firstName: e.target.value
+                            })
+                        }
+                        className="border p-2 rounded"
+                        placeHolder= "First Name"
+                        />
+                        <input
+                        value={user.lastName}
+                        onChange={(e)=>
+                            setUser({
+                                ...user,
+                                lastName: e.targer.value
+                            })
+                        }
+                        className="border p-2 rounded"
+                        placeholder="Last Name"
+                        />
+                        </div>
+                ):(
+                    <h2 className="mt-4 text-xl font-semibold">
+                        {user.firstName} {user.lastName}
+                    </h2>
+                )}
             </div>
 
             <div className="mt-6 w-full max-w-md space-y-3">
@@ -48,14 +101,42 @@ export const Profile=()=>{
                     <span  className="font-semibold" >
                         Phone:
                     </span>{" "}
-                    {user.phone || "Not added"}
+                   {editing?(
+                    <input
+                    value={user.phone || ""}
+                    onChange={(e)=>
+                        setUser({
+                            ...user,
+                            phone: e.target.value
+                        })
+                    }
+                    className="border p-2 rounded w-full"
+                    placeholder="Phone Number"
+                    />
+                   ):(
+                    user.phone || "Not added"
+                   )}
                 </div>
 
                  <div >
                     <span  className="font-semibold" >
                        Bio:
                     </span>{" "}
-                    {user.bio || "No bio added"}
+                    {editing?(
+                        <textarea
+                        value ={user.bio ||""}
+                        onChange={(e)=>
+                            setUser({
+                                ...user,
+                                bio: e.target.value
+                            })
+                        }
+                        className="border p-2 rounded w-full"
+                        placeholder="Bio"
+                        />
+                    ):(
+                        user.bio || "No bio added"
+                    )}
                 </div>
                 
                 <div>
@@ -65,11 +146,20 @@ export const Profile=()=>{
 
             </div>
 
-            <button
+            <button onClick={()=> setEditing(true)}
             className="mt-6 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
             >
              Edit Profile
             </button>
+
+            {editing &&(
+                <button 
+                onClick={saveProfile}
+                className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg"
+                >
+                    Save chnages
+                </button>
+            )}
 
            </div>
 
