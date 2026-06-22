@@ -55,12 +55,20 @@ function User({ user }) {
      const navigate=useNavigate();
     return (
         <div className="flex justify-between items-center py-2">
-            <div className="flex">
-                <div className="rounded-full h-12 w-12 bg-slate-200 flex justify-center mt-1 mr-2">
-                    <div className="flex flex-col justify-center h-full text-xl">
-                        {user.firstName[0].toUpperCase()}
+            <div className="flex items-center">
+                    <div className="h-12 w-12 mr-3">
+                        {user.profilePic?(
+                            <img 
+                            src={user.profilePic}
+                            alt={user.firstName}
+                            className="h-12 w-12 rounded-full  object-cover object-top"
+                            />
+                        ):(
+                            <div className="rounded-full h-12 w-12 bg-slate-200 flex justify-center items-center text-xl font-semibold">
+                                      {user.firstName?.charAt(0).toUpperCase()}
+                              </div>
+                        )}
                     </div>
-                </div>
 
                 <div className="flex flex-col justify-center h-full">
                     {user.firstName} {user.lastName}

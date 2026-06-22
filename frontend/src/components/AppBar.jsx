@@ -42,7 +42,7 @@ export const AppBar=({firstName})=>{
                     <img 
                     src={user.profilePic}
                     alt="profile"
-                    className="h-10 w-10 rounded-full object-cover"
+                    className="h-10 w-10 rounded-full object-top  object-cover"
                     />
                 ):(
                     <div className="flex flex-col justify-center h-full text-l font-bold">
