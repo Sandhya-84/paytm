@@ -110,7 +110,7 @@ export const Profile = () => {
                 <img
                     src={user.profilePic}
                     alt="Profile"
-                    className="w-28 h-28 rounded-full object-cover border-4 border-blue-100"
+                    className="w-28 h-28 rounded-full object-cover object-top border-4 border-blue-100"
                 />
             ) : (
                 <div className="w-28 h-28 rounded-full bg-blue-500 text-white flex items-center justify-center text-4xl font-bold">
