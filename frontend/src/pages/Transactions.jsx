@@ -8,12 +8,13 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
-    const navigate = useNavigate();
-    const [search,setSearch]=useState("");
-    const token = localStorage.getItem("token");
-    const [VisibleCount,setVisibleCount]=useState(10);
+    const [search, setSearch] = useState("");
+    const [visibleCount, setVisibleCount] = useState(10);
+    const [filterType, setFilterType] = useState("all");
 
-    // ✅ SAFE JWT decoding (handles id / _id / userId)
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
+
     const decoded = token ? jwtDecode(token) : null;
     const currentUserId = decoded
         ? String(decoded.id || decoded._id || decoded.userId)
@@ -27,7 +28,6 @@ export const Transactions = () => {
                 },
             })
             .then((res) => {
-                console.log("transactions:", res.data.transactions);
                 setTransactions(res.data.transactions);
             })
             .catch((err) => {
@@ -35,170 +35,215 @@ export const Transactions = () => {
             });
     }, []);
 
-            const filteredTransactions = transactions.filter((txn) => {
-    const sender =
-        `${txn.sender?.firstName || ""} ${txn.sender?.lastName || ""}`;
+    const filteredTransactions = transactions.filter((txn) => {
+        const sender =
+            `${txn.sender?.firstName || ""} ${txn.sender?.lastName || ""}`;
 
-    const receiver =
-        `${txn.receiver?.firstName || ""} ${txn.receiver?.lastName || ""}`;
+        const receiver =
+            `${txn.receiver?.firstName || ""} ${txn.receiver?.lastName || ""}`;
 
-    return (
-        sender.toLowerCase().includes(search.toLowerCase()) ||
-        receiver.toLowerCase().includes(search.toLowerCase())
+        return (
+            sender.toLowerCase().includes(search.toLowerCase()) ||
+            receiver.toLowerCase().includes(search.toLowerCase())
+        );
+    });
+
+    const typeFilteredTransactions = filteredTransactions.filter((txn) => {
+        const senderId = String(txn.sender?._id || txn.sender);
+
+        const isSent = senderId === currentUserId;
+
+        if (filterType === "sent") return isSent;
+        if (filterType === "received") return !isSent;
+
+        return true;
+    });
+
+    const isToday = (date) => {
+        return (
+            new Date(date).toDateString() ===
+            new Date().toDateString()
+        );
+    };
+
+    const isYesterday = (date) => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        return (
+            new Date(date).toDateString() ===
+            yesterday.toDateString()
+        );
+    };
+
+    const todayTransactions = typeFilteredTransactions.filter((txn) =>
+        isToday(txn.createdAt)
     );
-});
 
-const isToday = (date) => {
-    return (
-        new Date(date).toDateString() ===
-        new Date().toDateString()
+    const yesterdayTransactions = typeFilteredTransactions.filter((txn) =>
+        isYesterday(txn.createdAt)
     );
-};
 
-const isYesterday = (date) => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    return (
-        new Date(date).toDateString() ===
-        yesterday.toDateString()
+    const olderTransactions = typeFilteredTransactions.filter(
+        (txn) =>
+            !isToday(txn.createdAt) &&
+            !isYesterday(txn.createdAt)
     );
-};
 
-const todayTransactions = filteredTransactions.filter((txn) =>
-    isToday(txn.createdAt)
-);
+    const renderTransaction = (txn) => {
+        const senderId = String(txn.sender?._id || txn.sender);
+        const isSent = senderId === currentUserId;
 
-const yesterdayTransactions = filteredTransactions.filter((txn) =>
-    isYesterday(txn.createdAt)
-);
-
-const olderTransactions = filteredTransactions.filter(
-    (txn) =>
-        !isToday(txn.createdAt) &&
-        !isYesterday(txn.createdAt)
-);
-
-const renderTransaction = (txn) => {
-    const senderId = String(txn.sender?._id || txn.sender);
-    const isSent = senderId === currentUserId;
-
-    return (
-        <div
-            key={txn._id}
-            className="border p-4 rounded-lg mb-3 shadow-sm flex justify-between items-center bg-white"
-        >
-            <div>
-                <div className="font-semibold">
-                    {txn.sender?.firstName || "You"} →{" "}
-                    {txn.receiver?.firstName || "User"}
-                </div>
-
-                <div className="text-sm text-gray-500 mt-1">
-                    {new Date(txn.createdAt).toLocaleString()}
-                </div>
-            </div>
-
-            <div className="text-right">
-                <div
-                    className={`font-bold ${
-                        isSent
-                            ? "text-red-600"
-                            : "text-green-600"
-                    }`}
-                >
-                    {isSent
-                        ? `- ₹${txn.amount}`
-                        : `+ ₹${txn.amount}`}
-                </div>
-
-                <span
-                    className={`inline-block mt-1 px-2 py-1 text-xs rounded-full ${
-                        isSent
-                            ? "bg-red-100 text-red-600"
-                            : "bg-green-100 text-green-700"
-                    }`}
-                >
-                    {isSent ? "Sent" : "Received"}
-                </span>
-            </div>
-        </div>
-    );
-};
-    return (
-    <div className="max-w-4xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">
-                Transaction History
-            </h1>
-
-            <button
-                onClick={() => navigate("/dashboard")}
-                className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        return (
+            <div
+                key={txn._id}
+                className="border p-4 rounded-lg mb-3 shadow-sm flex justify-between items-center bg-white"
             >
-                <FiArrowLeft />
-                Dashboard
-            </button>
-        </div>
+                <div>
+                    <div className="font-semibold">
+                        {txn.sender?.firstName || "You"} →{" "}
+                        {txn.receiver?.firstName || "User"}
+                    </div>
 
-        <input
-            type="text"
-            placeholder="Search transactions..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border rounded-lg p-3 mb-6"
-        />
+                    <div className="text-sm text-gray-500 mt-1">
+                        {new Date(txn.createdAt).toLocaleString()}
+                    </div>
+                </div>
 
-        {todayTransactions.length > 0 && (
-            <>
-                <h2 className="text-xl font-bold mb-3">
-                    Today
-                </h2>
-
-                {todayTransactions.map(renderTransaction)}
-            </>
-        )}
-
-        {yesterdayTransactions.length > 0 && (
-            <>
-                <h2 className="text-xl font-bold mt-8 mb-3">
-                    Yesterday
-                </h2>
-
-                {yesterdayTransactions.map(renderTransaction)}
-            </>
-        )}
-
-        {olderTransactions.length > 0 && (
-            <>
-                <h2 className="text-xl font-bold mt-8 mb-3">
-                    Older
-                </h2>
-
-                {olderTransactions
-                    .slice(0, VisibleCount)
-                    .map(renderTransaction)}
-
-                {VisibleCount < olderTransactions.length && (
-                    <button
-                        onClick={() =>
-                            setVisibleCount(
-                                VisibleCount + 10
-                            )
-                        }
-                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                <div className="text-right">
+                    <div
+                        className={`font-bold ${
+                            isSent
+                                ? "text-red-600"
+                                : "text-green-600"
+                        }`}
                     >
-                        Show More
-                    </button>
-                )}
-            </>
-        )}
+                        {isSent
+                            ? `- ₹${txn.amount}`
+                            : `+ ₹${txn.amount}`}
+                    </div>
 
-        {filteredTransactions.length === 0 && (
-            <div className="text-center text-gray-500 mt-10">
-                No transactions found
+                    <span
+                        className={`inline-block mt-1 px-2 py-1 text-xs rounded-full ${
+                            isSent
+                                ? "bg-red-100 text-red-600"
+                                : "bg-green-100 text-green-700"
+                        }`}
+                    >
+                        {isSent ? "Sent" : "Received"}
+                    </span>
+                </div>
             </div>
-        )}
-    </div>
-);
-}
+        );
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">
+                    Transaction History
+                </h1>
+
+                <button
+                    onClick={() => navigate("/dashboard")}
+                    className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                >
+                    <FiArrowLeft />
+                    Dashboard
+                </button>
+            </div>
+
+            <input
+                type="text"
+                placeholder="Search transactions..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full border rounded-lg p-3 mb-4"
+            />
+
+            <div className="flex gap-3 mb-6">
+                <button
+                    onClick={() => setFilterType("all")}
+                    className={`px-4 py-2 rounded-lg ${
+                        filterType === "all"
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200"
+                    }`}
+                >
+                    All
+                </button>
+
+                <button
+                    onClick={() => setFilterType("sent")}
+                    className={`px-4 py-2 rounded-lg ${
+                        filterType === "sent"
+                            ? "bg-red-500 text-white"
+                            : "bg-gray-200"
+                    }`}
+                >
+                    Sent
+                </button>
+
+                <button
+                    onClick={() => setFilterType("received")}
+                    className={`px-4 py-2 rounded-lg ${
+                        filterType === "received"
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200"
+                    }`}
+                >
+                    Received
+                </button>
+            </div>
+
+            {todayTransactions.length > 0 && (
+                <>
+                    <h2 className="text-xl font-bold mb-3">
+                        Today
+                    </h2>
+                    {todayTransactions.map(renderTransaction)}
+                </>
+            )}
+
+            {yesterdayTransactions.length > 0 && (
+                <>
+                    <h2 className="text-xl font-bold mt-8 mb-3">
+                        Yesterday
+                    </h2>
+                    {yesterdayTransactions.map(renderTransaction)}
+                </>
+            )}
+
+            {olderTransactions.length > 0 && (
+                <>
+                    <h2 className="text-xl font-bold mt-8 mb-3">
+                        Older
+                    </h2>
+
+                    {olderTransactions
+                        .slice(0, visibleCount)
+                        .map(renderTransaction)}
+
+                    {visibleCount < olderTransactions.length && (
+                        <button
+                            onClick={() =>
+                                setVisibleCount(
+                                    visibleCount + 10
+                                )
+                            }
+                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                        >
+                            Show More
+                        </button>
+                    )}
+                </>
+            )}
+
+            {typeFilteredTransactions.length === 0 && (
+                <div className="text-center text-gray-500 mt-10">
+                    No transactions found
+                </div>
+            )}
+        </div>
+    );
+};
