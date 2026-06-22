@@ -172,7 +172,6 @@ router.get("/bulk", authMiddleware,async(req,res)=>{
             profilePic: user.profilePic,
             bio: user.bio,
             _id: user._id
-
         }))
         })
 })
